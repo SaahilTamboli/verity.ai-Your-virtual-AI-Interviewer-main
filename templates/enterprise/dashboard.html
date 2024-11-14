@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verity.ai - Enterprise Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Raleway:400,700');
+        :root {
+            --primary-color: #00FFFF;
+            --secondary-color: #004d4d;
+            --background-color: #000000;
+            --text-color: #E0FFFF;
+        }
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            font-family: 'Raleway', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .container:hover .top:before,
+        .container:hover .top:after,
+        .container:hover .bottom:before,
+        .container:hover .bottom:after,
+        .container:active .top:before,
+        .container:active .top:after,
+        .container:active .bottom:before,
+        .container:active .bottom:after {
+            margin-left: 200px;
+            transform-origin: -200px 50%;
+            transition-delay: 0s;
+        }
+        .container:hover .center,
+        .container:active .center {
+            opacity: 1;
+            transition-delay: 0.2s;
+        }
+        .top:before, .top:after,
+        .bottom:before, .bottom:after {
+            content: '';
+            display: block;
+            position: absolute;
+            width: 200vmax;
+            height: 200vmax;
+            top: 50%;
+            left: 50%;
+            margin-top: -100vmax;
+            transform-origin: 0 50%;
+            transition: all 0.5s cubic-bezier(0.445, 0.05, 0, 1);
+            z-index: 10;
+            opacity: 0.65;
+            transition-delay: 0.2s;
+        }
+        .top:before { transform: rotate(45deg); background: var(--primary-color); }
+        .top:after { transform: rotate(135deg); background: var(--secondary-color); }
+        .bottom:before { transform: rotate(-45deg); background: var(--primary-color); }
+        .bottom:after { transform: rotate(-135deg); background: var(--secondary-color); }
+        .center {
+            position: absolute;
+            width: 90%;
+            max-width: 800px;
+            height: auto;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            background: rgba(33, 37, 41, 0.8);
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+            z-index: 20;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.445, 0.05, 0, 1);
+            transition-delay: 0s;
+        }
+        h1, h2 {
+            color: var(--text-color);
+        }
+        form {
+            width: 100%;
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: var(--text-color);
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 15px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid var(--text-color);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-family: inherit;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        #interviewList {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .interview-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--text-color);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top"></div>
+        <div class="bottom"></div>
+        <div class="center">
+            <h1>Enterprise Dashboard</h1>
+            <form id="createInterviewForm" enctype="multipart/form-data">
+                <label for="jobRole">Job Role:</label>
+                <input type="text" id="jobRole" name="job_role" required>
+                
+                <label for="jobDescription">Job Description:</label>
+                <textarea id="jobDescription" name="job_description" rows="4" required></textarea>
+                
+                <label for="interviewType">Interview Type:</label>
+                <select id="interviewType" name="interview_type" required>
+                    <option value="technical">Technical</option>
+                    <option value="hr">HR</option>
+                    <option value="managerial">Managerial</option>
+                </select>
+                
+                <label for="file">Upload Document (optional):</label>
+                <input type="file" id="file" name="file">
+                
+                <button type="submit">Create Interview</button>
+            </form>
+
+            <div id="interviewList">
+                <h2>Created Interviews</h2>
+                <!-- Interview items will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('createInterviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/enterprise/create-interview', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Interview created successfully!\nInterview ID: ${data.interview_id}\nPassword: ${data.password}\nPlease save this information for users to access the interview.`);
+                    addInterviewToList(data);
+                    e.target.reset();
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.detail || 'Failed to create interview');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+
+        function addInterviewToList(interview) {
+            const interviewList = document.getElementById('interviewList');
+            const interviewItem = document.createElement('div');
+            interviewItem.className = 'interview-item';
+            interviewItem.innerHTML = `
+                <h3>${interview.position}</h3>
+                <p>Interview ID: ${interview.interview_id}</p>
+                <p>Status: ${interview.status}</p>
+            `;
+            interviewList.appendChild(interviewItem);
+        }
+
+        async function loadInterviews() {
+            try {
+                const response = await fetch('/enterprise/interviews');
+                if (response.ok) {
+                    const data = await response.json();
+                    data.interviews.forEach(interview => addInterviewToList(interview));
+                } else {
+                    console.error('Failed to load interviews');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        loadInterviews();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.center').style.opacity = '1';
+        });
+    </script>
+</body>
+</html>

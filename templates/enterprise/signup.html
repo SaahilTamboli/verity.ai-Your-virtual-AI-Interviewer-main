@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verity.ai - Enterprise Signup</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Asap&display=swap');
+
+        :root {
+            --redFire: black;
+            --cyan: rgba(0, 255, 255, 0.3);
+            --darkCyan: rgba(0, 139, 139, 0.3);
+        }
+
+        body {
+            background-color: var(--redFire);
+            font-family: 'Asap', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .signup {
+            overflow: hidden;
+            background-color: black;
+            padding: 40px 30px 30px 30px;
+            border-radius: 10px;
+            position: relative;
+            width: 400px;
+            box-shadow: 5px 10px 10px rgba(2, 128, 144, 0.2);
+            z-index: 1;
+        }
+
+        .signup::before, .signup::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 600px;
+            border-top-left-radius: 40%;
+            border-top-right-radius: 45%;
+            border-bottom-left-radius: 35%;
+            border-bottom-right-radius: 40%;
+            z-index: -1;
+        }
+
+        .signup::before {
+            left: -80px;
+            bottom: -30%;
+            background-color: var(--cyan);
+            animation: wawes 6s infinite linear;
+        }
+
+        .signup::after {
+            left: -100px;
+            bottom: -35%;
+            background-color: var(--darkCyan);
+            animation: wawes 7s infinite;
+        }
+
+        @keyframes wawes {
+            from { transform: rotate(0); }
+            to { transform: rotate(360deg); }
+        }
+
+        .signup input {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f2f2f2;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .signup button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--redFire);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .signup button:hover {
+            background-color: darkgrey;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-link {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup">
+        <h1>Enterprise Signup</h1>
+        <form id="signupForm">
+            <input type="text" id="companyName" placeholder="Company Name" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <input type="text" id="industry" placeholder="Industry" required>
+            <input type="text" id="size" placeholder="Company Size" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <a href="/enterprise/login" class="login-link">Already have an account? Login</a>
+    </div>
+    
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const companyName = document.getElementById('companyName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const industry = document.getElementById('industry').value;
+            const size = document.getElementById('size').value;
+
+            try {
+                const response = await fetch('/enterprise/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ company_name: companyName, email, password, industry, size }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    window.location.href = data.redirect_url;
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.detail || 'Signup failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

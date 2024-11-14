@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal AI - Your Virtual Interviewer</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        #app {
+            min-height: 100vh; /* Use min-height instead of height */
+            width: 100%;
+            display: flex;
+            flex-direction: column; /* Change to column layout */
+            align-items: flex-end; /* Align content to the right */
+            background-image: url('/static/Robot.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        #app::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(161, 196, 253, 0.5) 0%, rgba(194, 233, 251, 0.5) 100%);
+            transition: opacity 2s ease;
+        }
+        #app::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(246, 211, 101, 0.5) 0%, rgba(253, 160, 133, 0.5) 100%);
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        .container {
+            max-width: 400px; /* Reduced width */
+            width: 80%; /* Adjust width for smaller screens */
+            margin-right: 5%; /* Add right margin */
+            margin-top: auto; /* Push container to the bottom */
+            margin-bottom: 5%; /* Add some bottom margin */
+            padding: 30px; /* Reduced padding */
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh; /* Reduced height */
+            overflow: hidden; /* Ensure content does not overflow */
+        }
+        h1 {
+            font-size: 48px; /* Increased font size */
+            font-weight: bold;
+            color: #333333;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3);
+        }
+        p {
+            font-size: 20px; /* Reduced font size */
+            color: #444444;
+            text-align: center;
+            margin-bottom: 30px; /* Reduced margin */
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+        }
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-group {
+            width: 100%;
+            max-width: 300px; /* Reduced max-width */
+            margin-bottom: 20px; /* Reduced margin */
+            justify-content: center;
+            display: flex;
+        }
+        input {
+            width: 100%;
+            padding: 14px 18px; /* Reduced padding */
+            font-size: 16px; /* Reduced font size */
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #333333;
+            transition: all 0.3s ease;
+            
+        }
+        input:focus {
+            outline: none;
+            border-color: rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        input::placeholder {
+            color: rgba(0, 0, 0, 0.5);
+        }
+        button {
+            background-color: #ff6b35;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 14px 22px; /* Reduced padding */
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px; /* Reduced font size */
+            width: 100%;
+            max-width: 300px; /* Reduced max-width */
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background-color: #ff8c61;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        .thank-you {
+            font-size: 22px; /* Reduced font size */
+            color: #333333;
+            text-align: center;
+            margin-top: 20px; /* Reduced margin */
+            display: none;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+        }
+        .scroll-text {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            color: #ffffff;
+            text-align: center;
+        }
+        .arrow {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #ffffff;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .credits {
+            width: 100%; /* Full width */
+            max-width: 100%; /* Ensure it doesn't exceed viewport width */
+            margin-left: 0;
+            margin-right: 0;
+            box-sizing: border-box; /* Include padding in width calculation */
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .credits h2 {
+            font-size: 28px;
+            color: #333333;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .credits p {
+            font-size: 18px;
+            color: #444444;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .credits h3 {
+            font-size: 24px;
+            color: #333333;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .credits ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .credits li {
+            font-size: 18px;
+            color: #444444;
+            margin-bottom: 10px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .credits li::before {
+            content: "•";
+            color: #ff6b35;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin: 0 5px;
+            vertical-align: middle;
+        }
+
+        .developer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .developer p {
+            margin: 0 10px 0 0;
+        }
+
+        .technical-section {
+            width: 100%; /* Full width */
+            max-width: 100%; /* Ensure it doesn't exceed viewport width */
+            margin-left: 0;
+            margin-right: 0;
+            box-sizing: border-box; /* Include padding in width calculation */
+            margin-top: 40px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+        }
+
+        .technical-section h2 {
+            font-size: 28px;
+            color: #333333;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .technical-section p {
+            font-size: 18px;
+            color: #444444;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .technical-section img {
+            width: 100%;
+            max-width: 600px;
+            display: block;
+            margin: 0 auto;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .credits, .technical-section {
+            padding: 60px 40px;
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 36px;
+            color: #ff6b35;
+            margin-bottom: 30px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .section-intro, .section-outro {
+            font-size: 20px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .interaction-methods {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .interaction-method {
+            flex: 1;
+            min-width: 250px;
+            padding: 30px;
+            background: linear-gradient(135deg, #ff6b35, #ff8c61);
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+            color: #fff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .interaction-method:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .interaction-method h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .interaction-method p {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature {
+            padding: 30px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            color: #ff6b35;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            font-size: 22px;
+            color: #444;
+            margin-bottom: 15px;
+        }
+
+        .feature p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .diagram-container {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .technical-diagram {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .technical-diagram:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .credits, .technical-section {
+                padding: 40px 20px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            .section-intro, .section-outro {
+                font-size: 18px;
+            }
+
+            .interaction-method h3 {
+                font-size: 22px;
+            }
+
+            .feature h3 {
+                font-size: 20px;
+            }
+
+            .feature p {
+                font-size: 14px;
+            }
+
+            .container {
+                width: 90%; /* Increase width on smaller screens */
+                margin-right: 5%;
+                margin-left: 5%;
+            }
+        }
+
+        /* Customize scrollbar for Chrome */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 107, 53, 0.7);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 107, 53, 0.9);
+        }
+
+        /* Add smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>Surreal AI</h1>
+            <p>Experience the fastest conversational AI with human-like conversational speed.</p>
+            <form id="emailForm" action="/submit-email" method="post">
+                <div class="input-group">
+                    <input type="email" name="email" id="emailInput" placeholder="Enter your email" required>
+                </div>
+                <button type="submit">Get Started</button>
+            </form>
+            <p class="thank-you" id="thankYouMessage">Thank you for your interest! We'll be in touch soon with exclusive updates.</p>
+            <h2>Credits</h2>
+            <div class="developer">
+                <p>Vedant Deshmukh</p>
+                <a href="https://github.com/VedantDeshmukh1" target="_blank">
+                    <img src="/static/github-icon.png" alt="GitHub" class="icon">
+                </a>
+                <a href="https://www.linkedin.com/in/vedant-deshmukh-173607264/" target="_blank">
+                    <img src="/static/linkedin-icon.png" alt="LinkedIn" class="icon">
+                </a>
+            </div>
+            <div class="developer">
+                <p>Kanishk Arya</p>
+                <a href="https://github.com/Parzival7566" target="_blank">
+                    <img src="/static/github-icon.png" alt="GitHub" class="icon">
+                </a>
+                <a href="https://www.linkedin.com/in/kan-arya/" target="_blank">
+                    <img src="/static/linkedin-icon.png" alt="LinkedIn" class="icon">
+                </a>
+            </div>
+        </div>
+        <div class="scroll-text">Scroll down to learn how to use this</div>
+        <div class="arrow">↓</div>
+    </div>
+    <div class="credits" data-aos="fade-up">
+        <h2 class="section-title">Interact with Surreal AI</h2>
+        <p class="section-intro">Discover two exciting ways to engage with our cutting-edge chatbot:</p>
+        
+        <div class="interaction-methods">
+            <div class="interaction-method" data-aos="flip-left">
+                <h3><i class="fas fa-keyboard"></i> Text Chat</h3>
+                <p>Type your queries and receive instant text responses. It's that simple!</p>
+            </div>
+            
+            <div class="interaction-method" data-aos="flip-right">
+                <h3><i class="fas fa-microphone"></i> Voice Interaction</h3>
+                <p>Speak naturally and hear AI-generated responses. Experience conversation reimagined!</p>
+            </div>
+        </div>
+        
+        <p class="section-outro" data-aos="fade-up">Ready to start? Join our waitlist and be among the first to chat with the future!</p>
+    </div>
+    <div class="technical-section" data-aos="fade-up">
+        <h2 class="section-title">Lightning-Fast AI Conversations</h2>
+        <p class="section-intro">Our revolutionary asynchronous system breaks the speed barrier. Here's how:</p>
+        
+        <div class="feature-grid">
+            <div class="feature" data-aos="zoom-in-up">
+                <i class="fas fa-bolt feature-icon"></i>
+                <h3>Parallel Processing</h3>
+                <p>Multiple AI components work simultaneously, slashing response times.</p>
+            </div>
+            <div class="feature" data-aos="zoom-in-up" data-aos-delay="100">
+                <i class="fas fa-stopwatch feature-icon"></i>
+                <h3>Early Start Advantage</h3>
+                <p>Processing begins instantly, no waiting for complete input.</p>
+            </div>
+            <div class="feature" data-aos="zoom-in-up" data-aos-delay="200">
+                <i class="fas fa-stream feature-icon"></i>
+                <h3>Continuous Output</h3>
+                <p>Hear responses as they're generated, just like a real conversation.</p>
+            </div>
+            <div class="feature" data-aos="zoom-in-up" data-aos-delay="300">
+                <i class="fas fa-tachometer-alt feature-icon"></i>
+                <h3>40% Faster</h3>
+                <p>Experience AI responses up to 40% quicker than traditional systems.</p>
+            </div>
+        </div>
+        
+        <p class="section-outro" data-aos="fade-up">Surreal AI: Where instant thoughts meet instant responses.</p>
+        
+        <div class="diagram-container" data-aos="zoom-in">
+            <img src="static/expanded-speech-processing-flow.svg" alt="Surreal AI's Asynchronous System" class="technical-diagram">
+        </div>
+    </div>
+
+    <!-- Add this before the closing </body> tag -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+    </script>
+    <script>
+        const app = document.getElementById('app');
+        const form = document.getElementById('emailForm');
+        const thankYouMessage = document.getElementById('thankYouMessage');
+        const emailInput = document.getElementById('emailInput');
+        const bgGradients = [
+            'linear-gradient(120deg, rgba(161, 196, 253, 0.5) 0%, rgba(194, 233, 251, 0.5) 100%)',
+            'linear-gradient(120deg, rgba(246, 211, 101, 0.5) 0%, rgba(253, 160, 133, 0.5) 100%)',
+            'linear-gradient(120deg, rgba(132, 250, 176, 0.5) 0%, rgba(143, 211, 244, 0.5) 100%)',
+            'linear-gradient(120deg, rgba(238, 156, 167, 0.5) 0%, rgba(255, 221, 225, 0.5) 100%)'
+        ];
+        let bgIndex = 0;
+
+        function changeBgGradient() {
+            bgIndex = (bgIndex + 1) % bgGradients.length;
+            const nextIndex = (bgIndex + 1) % bgGradients.length;
+
+            app.querySelector('::before').style.opacity = '0';
+            app.querySelector('::after').style.opacity = '1';
+            app.querySelector('::after').style.background = bgGradients[bgIndex];
+
+            setTimeout(() => {
+                app.querySelector('::before').style.background = bgGradients[nextIndex];
+                app.querySelector('::before').style.opacity = '1';
+                app.querySelector('::after').style.opacity = '0';
+            }, 2000);
+        }
+
+        setInterval(changeBgGradient, 5000);
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = emailInput.value;
+            
+            // Store email in localStorage
+            localStorage.setItem('userEmail', email);
+
+            // Submit the form
+            fetch('/submit-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `email=${encodeURIComponent(email)}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    form.style.display = 'none';
+                    thankYouMessage.style.display = 'block';
+                    // Redirect to chat page immediately
+                    window.location.href = `/chat?email=${encodeURIComponent(email)}`;
+                } else {
+                    throw new Error('Failed to submit email');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+    </script>
+</body>
+</html>

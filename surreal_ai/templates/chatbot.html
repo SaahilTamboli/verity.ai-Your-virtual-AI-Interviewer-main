@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal AI Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            background: #000;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: linear-gradient(45deg, #0a0a2e, #1e1e5b, #2a2a7f);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #chat-header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 10;
+        }
+
+        #chat-header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #f3ec78, #af4261);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            animation: subtle-pulse 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes subtle-pulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        #chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            max-width: 70%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            word-wrap: break-word;
+            display: inline-block;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: rgba(100, 100, 255, 0.2);
+            float: right;
+            clear: both;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: rgba(255, 100, 100, 0.2);
+            float: left;
+            clear: both;
+        }
+
+        .message:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        #input-area {
+            display: flex;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        #input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        #input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #mic-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            margin-left: 15px;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #mic-button:hover {
+            transform: scale(1.05);
+        }
+
+        #mic-button.listening {
+            background: linear-gradient(45deg, #ff4b4b, #ff3333);
+            animation: pulse 1.5s infinite;
+        }
+
+        #surreal-element {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 200px;
+            opacity: 0.03;
+            pointer-events: none;
+            animation: rotate 20s linear infinite;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes rotate {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff00de, 0 0 35px #ff00de, 0 0 40px #ff00de, 0 0 50px #ff00de, 0 0 75px #ff00de;
+            }
+            to {
+                text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff00de, 0 0 70px #ff00de, 0 0 80px #ff00de, 0 0 100px #ff00de, 0 0 150px #ff00de;
+            }
+        }
+
+        #role-selection {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin: 20px;
+            display: none;
+        }
+
+        #role-selection h2 {
+            color: #f3ec78;
+            margin-bottom: 20px;
+        }
+
+        .role-btn {
+            background: rgba(100, 100, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .role-btn:hover {
+            background: rgba(100, 100, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        #custom-role {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        #confirm-role {
+            background: linear-gradient(45deg, #f3ec78, #af4261);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #confirm-role:hover {
+            transform: scale(1.05);
+        }
+
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(10, 10, 46, 0.9), rgba(30, 30, 91, 0.9), rgba(42, 42, 127, 0.9));
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .loading-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #f3ec78;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(243, 236, 120, 0.5);
+        }
+
+        .loading-dots {
+            font-size: 36px;
+            color: #af4261;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="chat-header">
+            <h1>Surreal AI</h1>
+        </div>
+        <div id="role-selection">
+            <h2>Choose a role for Surreal AI</h2>
+            <div id="role-options">
+                <button class="role-btn">Personal Assistant</button>
+                <button class="role-btn">Companion</button>
+                <button class="role-btn">Tutor</button>
+                <button class="role-btn">Career Advisor</button>
+            </div>
+            <input id="custom-role" type="text" placeholder="Or define your own role...">
+            <button id="confirm-role">Confirm</button>
+        </div>
+        <div id="loading-container" class="loading-container">
+            <div class="loading-content">
+                <div class="loading-text">Connecting to Surreal AI server</div>
+                <div class="loading-dots">...</div>
+            </div>
+        </div>
+        <div id="chat-area"></div>
+        <div id="input-area">
+            <input id="input" type="text" placeholder="Type your message here...">
+            <button id="mic-button">🎤</button>
+        </div>
+        <div id="surreal-element">∞</div>
+    </div>
+
+    <script>
+        const chatArea = document.getElementById('chat-area');
+        const input = document.getElementById('input');
+        const micButton = document.getElementById('mic-button');
+        const container = document.getElementById('container');
+        const roleSelection = document.getElementById('role-selection');
+        const roleOptions = document.getElementById('role-options');
+        const customRole = document.getElementById('custom-role');
+        const confirmRole = document.getElementById('confirm-role');
+        const loadingContainer = document.getElementById('loading-container');
+        const loadingDots = document.querySelector('.loading-dots');
+
+        let isListening = false;
+        let ws;
+        let recognition;
+        let audioContext, source, audioQueue = [];
+        let isPlayingAudio = false;
+        let userRole = '';
+        let userEmail = '';
+
+        // Function to animate loading dots
+        function animateLoadingDots() {
+            let dots = '';
+            return setInterval(() => {
+                dots = dots.length < 3 ? dots + '.' : '';
+                loadingDots.textContent = dots.padEnd(3, ' ');
+            }, 500);
+        }
+
+        let loadingInterval = animateLoadingDots();
+
+        function connectWebSocket() {
+            console.log("Attempting to connect WebSocket");
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (!userEmail) {
+                console.error("No user email found. Redirecting to landing page.");
+                window.location.href = '/';
+                return;
+            }
+            
+            ws = new WebSocket(`wss://surrealai.in/wss`);
+            
+            ws.onopen = function(event) {
+                console.log("WebSocket connection established");
+                loadingContainer.style.display = 'none';
+                clearInterval(loadingInterval);
+                ws.send(JSON.stringify({type: 'email', content: userEmail}));
+            };
+
+            ws.onmessage = handleWebSocketMessage;
+
+            ws.onclose = function(event) {
+                console.log('WebSocket closed. Reason:', event.reason);
+                setTimeout(connectWebSocket, 1000);
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                loadingDots.textContent = 'Connection failed. Please refresh.';
+                loadingDots.classList.add('error');
+            };
+        }
+
+        async function handleWebSocketMessage(event) {
+            console.log("Received WebSocket message", event);
+            if (event.data instanceof Blob) {
+                console.log("Received audio chunk", event.data.size);
+                const arrayBuffer = await event.data.arrayBuffer();
+                audioQueue.push(arrayBuffer);
+                if (!isPlayingAudio) {
+                    playNextAudioChunk();
+                }
+            } else {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log("Received parsed message:", data);
+                    switch (data.type) {
+                        case 'text':
+                            addMessage(data.content, 'bot');
+                            break;
+                        case 'history':
+                            addMessage(data.content.content, data.content.role, true);
+                            break;
+                        case 'audio_end':
+                            console.log('Audio playback complete');
+                            break;
+                        case 'info':
+                            console.log(data.content);
+                            break;
+                        case 'error':
+                            console.error(data.content);
+                            addMessage(`Error: ${data.content}`, 'bot');
+                            break;
+                    }
+                } catch (error) {
+                    console.error("Error parsing WebSocket message:", error);
+                }
+            }
+        }
+
+        async function playNextAudioChunk() {
+            if (audioQueue.length === 0) {
+                isPlayingAudio = false;
+                return;
+            }
+
+            isPlayingAudio = true;
+            const audioChunk = audioQueue.shift();
+
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const buffer = audioContext.createBuffer(1, audioChunk.length, 48000);
+            buffer.getChannelData(0).set(audioChunk);
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.onended = playNextAudioChunk;
+            source.start(0);
+        }
+
+        function addMessage(text, sender, isHistory = false) {
+            const messageContainer = document.createElement('div');
+            messageContainer.style.width = '100%';
+            messageContainer.style.overflow = 'hidden';
+
+            const message = document.createElement('div');
+            message.classList.add('message', sender);
+            if (isHistory) {
+                message.classList.add('history-message');
+            }
+            
+            messageContainer.appendChild(message);
+            chatArea.appendChild(messageContainer);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            message.style.animation = 'float 3s ease-in-out infinite';
+
+            // Animate text appearance
+            const words = text.split(' ');
+            let i = 0;
+            const animateText = () => {
+                if (i < words.length) {
+                    message.textContent += words[i] + ' ';
+                    i++;
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                    setTimeout(animateText, 50 + Math.random() * 50); // Randomize delay for more natural effect
+                }
+            };
+            animateText();
+        }
+
+        function sendMessage(content, type) {
+            addMessage(content, 'user');
+            input.value = '';
+            console.log(`Sending ${type} message:`, content);
+            ws.send(JSON.stringify({type: type, content: content}));
+        }
+
+        function handleSendMessage() {
+            const text = input.value.trim();
+            if (text) {
+                sendMessage(text, 'text');
+            }
+        }
+
+        function handleSpeechInput(transcript) {
+            if (transcript) {
+                sendMessage(transcript, 'speech');
+            }
+        }
+
+        function handleMicClick() {
+            if (!recognition) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    handleSpeechInput(transcript);
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error', event.error);
+                    switch(event.error) {
+                        case 'network':
+                            addMessage("Network error. Please check your internet connection and try again.", 'bot');
+                            break;
+                        case 'not-allowed':
+                        case 'service-not-allowed':
+                            addMessage("Microphone access denied. Please enable microphone access and try again.", 'bot');
+                            break;
+                        default:
+                            addMessage("Speech recognition error. Please try again or type your message.", 'bot');
+                    }
+                    stopListening();
+                };
+
+                recognition.onend = function() {
+                    stopListening();
+                };
+            }
+
+            if (isListening) {
+                recognition.stop();
+                micButton.textContent = '🎤';
+            } else {
+                recognition.start();
+                micButton.textContent = '🛑';
+            }
+            isListening = !isListening;
+        }
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSendMessage();
+            }
+        });
+
+        micButton.addEventListener('click', handleMicClick);
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            particle.style.width = Math.random() * 5 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animation = `float ${Math.random() * 3 + 2}s ease-in-out infinite`;
+            container.appendChild(particle);
+            setTimeout(() => particle.remove(), 5000);
+        }
+
+        setInterval(createParticle, 200);
+
+        function showRoleSelection() {
+            roleSelection.style.display = 'block';
+            chatArea.style.display = 'none';
+            document.getElementById('input-area').style.display = 'none';
+        }
+
+        function hideRoleSelection() {
+            roleSelection.style.display = 'none';
+            chatArea.style.display = 'block';
+            document.getElementById('input-area').style.display = 'flex';
+        }
+
+        roleOptions.addEventListener('click', (e) => {
+            if (e.target.classList.contains('role-btn')) {
+                userRole = e.target.textContent;
+                customRole.value = '';
+                setUserRole(userRole);
+                hideRoleSelection();
+            }
+        });
+
+        confirmRole.addEventListener('click', () => {
+            if (customRole.value.trim()) {
+                userRole = customRole.value.trim();
+            }
+            if (userRole) {
+                hideRoleSelection();
+                setUserRole(userRole);
+            } else {
+                alert('Please select a role or enter a custom one.');
+            }
+        });
+
+        function setUserRole(role) {
+            const systemPrompt = `You are an AI assistant acting as a ${role}. Provide helpful and accurate information related to this role. If a question is beyond your expertise, politely explain and offer relevant information if possible.`;
+            ws.send(JSON.stringify({type: 'system_prompt', content: systemPrompt}));
+            addMessage(`Hello! I'm your ${role}. How can I assist you today?`, 'bot');
+        }
+
+        window.onload = function() {
+            userEmail = new URLSearchParams(window.location.search).get('email');
+            if (userEmail) {
+                localStorage.setItem('userEmail', userEmail);
+                connectWebSocket();
+                showRoleSelection();
+            } else {
+                console.error("No email provided. Redirecting to landing page.");
+                window.location.href = '/';
+            }
+        };
+    </script>
+</body>
+</html>

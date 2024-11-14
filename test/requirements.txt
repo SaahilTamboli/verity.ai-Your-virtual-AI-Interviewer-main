@@ -1,0 +1,13 @@
+python-dotenv
+deepgram-sdk
+pyht
+groq
+numpy
+simpleaudio
+pyaudio
+sounddevice
+langchain-community
+langchain
+langchain-groq
+pinecone
+langchain-pinecone

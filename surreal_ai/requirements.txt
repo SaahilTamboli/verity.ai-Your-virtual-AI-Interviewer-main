@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+jinja2
+python-dotenv
+supabase
+langchain
+langchain-core
+langchain-groq
+numpy
+sounddevice
+websockets
+pyht
+groq

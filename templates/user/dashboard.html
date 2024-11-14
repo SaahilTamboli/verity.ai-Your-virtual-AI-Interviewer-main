@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Virtual Interviewer Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #00FFFF;
+            --secondary-color: #FF00FF;
+            --background-color: #0A0A0A;
+            --text-color: #E2E8F0;
+            --accent-glow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.05), rgba(255, 0, 255, 0.05));
+            pointer-events: none;
+            z-index: -1;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .button-group {
+            display: flex;
+            gap: 20px;
+        }
+        .dashboard-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--text-color);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dashboard-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--accent-glow);
+}
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        .card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 15px 30px rgba(0, 255, 255, 0.2);
+}
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .card-content {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .card-subtitle {
+            font-size: 16px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+        .feedback-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feedback-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.feedback-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+}
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .feedback-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .feedback-rating {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .positive { background-color: #10b981; }
+        .neutral { background-color: #f59e0b; }
+        .negative { background-color: #ef4444; }
+        #enterprise-interview-form {
+            margin-top: 40px;
+        }
+        #enterprise-interview-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-color);
+        }
+        #enterprise-interview-form button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        #enterprise-interview-form button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--accent-glow);
+        }
+        .modal-content {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+}
+
+.drop-zone {
+    border: 2px dashed var(--primary-color);
+    border-radius: 15px;
+    padding: 40px;
+    transition: all 0.3s ease;
+}
+
+.drop-zone:hover {
+    background-color: rgba(0, 255, 255, 0.05);
+}
+
+        @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-out;
+}
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+        margin: 10% auto;
+        padding: 30px;
+        border-radius: 15px;
+        width: 80%;
+        max-width: 600px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .drop-zone {
+        border: 2px dashed var(--primary-color);
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .drop-zone:hover {
+        background-color: rgba(0, 255, 255, 0.05);
+    }
+
+    .upload-icon {
+        margin-bottom: 20px;
+    }
+
+    .select-files-btn {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: var(--text-color);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .select-files-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--accent-glow);
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome, User {{ user_id }}</h1>
+            <div class="button-group">
+                <button class="dashboard-btn" id="uploadResumeBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <span id="uploadResumeText">Upload Resume</span>
+                </button>
+                <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx">
+                <button class="dashboard-btn" id="newInterviewBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    New Interview
+                </button>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Total Interviews</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <div class="card-content">1,284</div>
+                <div class="card-subtitle">+20% from last month</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Avg. Interview Duration</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <div class="card-content">45 min</div>
+                <div class="card-subtitle">-5% from last month</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Upcoming Interviews</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <div class="card-content">24</div>
+                <div class="card-subtitle">Next 7 days</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Avg. Candidate Score</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                </div>
+                <div class="card-content">7.8 / 10</div>
+                <div class="card-subtitle">+0.5 from last month</div>
+            </div>
+        </div>
+        
+        <div class="grid" style="margin-top: 40px;">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Interview Types Distribution</span>
+                </div>
+                <canvas id="interviewChart"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Previous Interviews Feedback</span>
+                </div>
+                <ul class="feedback-list">
+                    <li class="feedback-item">
+                        <div class="feedback-header">
+                            <span class="feedback-name">Alice Johnson - Data Scientist</span>
+                            <div class="feedback-rating positive"></div>
+                        </div>
+                        <p>Strong technical skills, needs improvement in communication</p>
+                    </li>
+                    <li class="feedback-item">
+                        <div class="feedback-header">
+                            <span class="feedback-name">Bob Smith - Frontend Developer</span>
+                            <div class="feedback-rating neutral"></div>
+                        </div>
+                        <p>Excellent problem-solving abilities, cultural fit concerns</p>
+                    </li>
+                    <li class="feedback-item">
+                        <div class="feedback-header">
+                            <span class="feedback-name">Carol Davis - Product Manager</span>
+                            <div class="feedback-rating positive"></div>
+                        </div>
+                        <p>Great leadership potential, lacks some technical knowledge</p>
+                    </li>
+                    <li class="feedback-item">
+                        <div class="feedback-header">
+                            <span class="feedback-name">David Brown - UX Designer</span>
+                            <div class="feedback-rating negative"></div>
+                        </div>
+                        <p>Creative portfolio, struggled with some design principles</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="card" style="margin-top: 40px;">
+            <h2 class="card-title">Start Enterprise Interview</h2>
+            <form id="enterprise-interview-form">
+                <input type="text" id="interview-code" name="interview_code" placeholder="Interview Code" required>
+                <input type="password" id="interview-password" name="password" placeholder="Interview Password" required>
+                <button type="submit">Start Enterprise Interview</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check for token in localStorage and include it in requests
+   /*     const token = localStorage.getItem('token');
+   if (!token) {
+     window.location.href = '/login-page';
+   }*/
+        // Use this token in your fetch requests to protected routes
+        document.getElementById('enterprise-interview-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const interviewCode = document.getElementById('interview-code').value;
+            const password = document.getElementById('interview-password').value;
+            
+            try {
+                const response = await fetch('/user/start-enterprise-interview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ interview_code: interviewCode, password: password }),
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    window.location.href = data.redirect_url;
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.detail || 'Failed to start enterprise interview');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An unexpected error occurred.');
+            }
+        });
+
+        // Chart.js configuration
+        const ctx = document.getElementById('interviewChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Technical', 'Behavioral', 'Cultural Fit', 'Leadership'],
+                datasets: [{
+                    label: 'Number of Interviews',
+                    data: [40, 30, 20, 10],
+                    backgroundColor: '#3b82f6',
+                    borderColor: '#2563eb',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+    responsive: true,
+    scales: {
+        y: {
+            beginAtZero: true,
+            grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+                color: 'rgba(255, 255, 255, 0.7)'
+            }
+        },
+        x: {
+            grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+                color: 'rgba(255, 255, 255, 0.7)'
+            }
+        }
+    },
+    plugins: {
+        legend: {
+            display: false
+        }
+    }
+}
+        });
+
+        
+    document.addEventListener('DOMContentLoaded', function() {
+    const newInterviewBtn = document.getElementById('newInterviewBtn');
+    const uploadResumeBtn = document.getElementById('uploadResumeBtn');
+    const uploadResumeText = document.getElementById('uploadResumeText');
+    const fileInput = document.getElementById('fileInput');
+    const modal = document.getElementById('uploadModal');
+    const dropZone = document.getElementById('dropZone');
+    const selectFilesBtn = document.getElementById('selectFilesBtn');
+
+    async function checkResumeStatus() {
+        try {
+            const response = await fetch('/user/resume-status');
+            if (!response.ok) {
+                throw new Error('Failed to fetch resume status');
+            }
+            const data = await response.json();
+            if (data.resume_uploaded) {
+                newInterviewBtn.disabled = false;
+                newInterviewBtn.classList.remove('disabled');
+                uploadResumeText.textContent = 'Update Resume';
+            } else {
+                newInterviewBtn.disabled = true;
+                newInterviewBtn.classList.add('disabled');
+                uploadResumeText.textContent = 'Upload Resume';
+            }
+        } catch (error) {
+            console.error('Error checking resume status:', error);
+        }
+    }
+
+    checkResumeStatus();
+
+    newInterviewBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (this.disabled) {
+            alert('Please upload your resume before creating a new interview.');
+        } else {
+            window.location.href = '/user/new-interview';
+        }
+    });
+
+    uploadResumeBtn.addEventListener('click', function() {
+        modal.style.display = 'block';
+    });
+
+    
+    window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'rgba(0, 255, 255, 0.1)';
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'transparent';
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'transparent';
+        const files = e.dataTransfer.files;
+        handleFiles(files);
+    });
+
+    selectFilesBtn.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function(e) {
+        const files = e.target.files;
+        handleFiles(files);
+    });
+
+    function handleFiles(files) {
+        if (files.length > 0) {
+            const file = files[0];
+            uploadFile(file);
+        }
+    }
+
+    async function uploadFile(file) {
+        uploadResumeText.textContent = 'Uploading...';
+        uploadResumeBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/user/upload-file', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Upload failed');
+            }
+
+            const data = await response.json();
+            console.log('File uploaded successfully:', data);
+            alert('Resume uploaded successfully!');
+            uploadResumeText.textContent = 'Update Resume';
+            checkResumeStatus();
+            modal.style.display = 'none';
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert(error.message || 'Error uploading file. Please try again.');
+            uploadResumeText.textContent = 'Upload Resume';
+        } finally {
+            uploadResumeBtn.disabled = false;
+        }
+    }
+});
+    </script>
+   <div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <h2>Upload Resume</h2>
+        <div id="dropZone" class="drop-zone">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <p>Drag and drop your resume here or click the button below to select a file.</p>
+            <button id="selectFilesBtn" class="select-files-btn">Select File</button>
+        </div>
+        <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx">
+    </div>
+</div>
+</body>
+</html>

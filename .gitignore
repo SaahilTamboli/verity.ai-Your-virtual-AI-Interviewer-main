@@ -1,0 +1,5 @@
+.env
+verity3.12
+app/__pycache__
+*.pyc
+.DS_Store

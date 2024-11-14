@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verity.ai - Enterprise Home</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #00ffff;
+            --secondary-color: #008080;
+            --dark-cyan: #004d4d;
+            --background-color: #0a0a0a;
+            --text-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px 0;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            background-color: rgba(0, 0, 0, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 255, 255, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 400;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.2s;
+            animation-fill-mode: both;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out 0.4s;
+            animation-fill-mode: both;
+        }
+
+        .button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
+        }
+
+        .button.secondary {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .button.secondary:hover {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .wave-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            overflow: hidden;
+            line-height: 0;
+            z-index: 10;
+        }
+
+        .wave-container svg {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            fill: var(--dark-cyan);
+        }
+
+        .orb {
+            position: fixed;
+            pointer-events: none;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,128,128,0.4) 0%, rgba(0,128,128,0) 70%);
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="#" class="logo">Verity.ai</a>
+                <div class="nav-links">
+                    <a href="#about">About</a>
+                    <a href="#services">Services</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to Verity.ai Enterprise</h1>
+            <p>Streamline your hiring process with AI-powered interviews.</p>
+            <div class="cta-buttons">
+                <a href="/enterprise/login" class="button">Login</a>
+                <a href="/enterprise/signup" class="button secondary">Sign Up</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="wave-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 60" preserveAspectRatio="none">
+            <path d="M321.39,30c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,15,906.67,56,985.66,76.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,30Z"></path>
+        </svg>
+    </div>
+
+    <div class="orb"></div>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            header.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Orb effect
+        const orb = document.querySelector('.orb');
+        let orbVisible = false;
+
+        document.addEventListener('mousemove', function(e) {
+            if (!orbVisible) {
+                orb.style.opacity = '1';
+                orbVisible = true;
+            }
+            orb.style.left = e.clientX + 'px';
+            orb.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mouseleave', function() {
+            orb.style.opacity = '0';
+            orbVisible = false;
+        });
+
+        // Wavy animation
+        const wave = document.querySelector('.wave-container path');
+        let phase = 0;
+
+        function animateWave() {
+            phase += 0.005;
+            const points = [];
+            for (let i = 0; i <= 1200; i += 5) {
+                const y = Math.sin(i * 0.01 + phase) * 10 + 30;
+                points.push(`${i},${y}`);
+            }
+            wave.setAttribute('d', `M${points.join(' ')} L1200,60 L0,60 Z`);
+            requestAnimationFrame(animateWave);
+        }
+
+        animateWave();
+    </script>
+</body>
+</html>

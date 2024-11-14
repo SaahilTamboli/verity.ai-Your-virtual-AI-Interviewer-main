@@ -1,0 +1,7 @@
+fastapi
+jinja2
+uvicorn
+groq
+pypdf2
+langchain
+faiss-cpu

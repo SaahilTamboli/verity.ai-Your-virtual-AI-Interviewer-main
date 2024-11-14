@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal AI - Your Virtual Interviewer</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        #app {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            background-image: url('Robot.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        #app::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(161, 196, 253, 0.5) 0%, rgba(194, 233, 251, 0.5) 100%);
+            transition: opacity 2s ease;
+        }
+        #app::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(246, 211, 101, 0.5) 0%, rgba(253, 160, 133, 0.5) 100%);
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        .container {
+            max-width: 450px;
+            width: 100%;
+            margin-right: 5%;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 70vh;
+        }
+        h1 {
+            font-size: 42px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        p {
+            font-size: 22px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            margin-bottom: 30px;
+        }
+        label {
+            display: block;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        button {
+            background-color: #f4511e;
+            color: white;
+            font-weight: bold;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 20px;
+            width: 100%;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background-color: #e64a19;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        .thank-you {
+            font-size: 24px;
+            color: #fff;
+            text-align: center;
+            margin-top: 30px;
+            display: none;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>Surreal AI</h1>
+            <p>Experience the future of interviews with our real-time AI chatbot that thinks and responds instantly.</p>
+            <form id="emailForm">
+                <label for="email">Join the Waitlist</label>
+                <input type="email" id="email" placeholder="Enter your email address" required>
+                <button type="submit">Get Early Access</button>
+            </form>
+            <p class="thank-you" id="thankYouMessage">Thank you for your interest! We'll be in touch soon with exclusive updates.</p>
+        </div>
+    </div>
+
+    <script>
+        const app = document.getElementById('app');
+        const form = document.getElementById('emailForm');
+        const thankYouMessage = document.getElementById('thankYouMessage');
+        const bgGradients = [
+            'linear-gradient(120deg, rgba(161, 196, 253, 0.5) 0%, rgba(194, 233, 251, 0.5) 100%)',
+            'linear-gradient(120deg, rgba(246, 211, 101, 0.5) 0%, rgba(253, 160, 133, 0.5) 100%)',
+            'linear-gradient(120deg, rgba(132, 250, 176, 0.5) 0%, rgba(143, 211, 244, 0.5) 100%)',
+            'linear-gradient(120deg, rgba(238, 156, 167, 0.5) 0%, rgba(255, 221, 225, 0.5) 100%)'
+        ];
+        let bgIndex = 0;
+
+        function changeBgGradient() {
+            bgIndex = (bgIndex + 1) % bgGradients.length;
+            const nextIndex = (bgIndex + 1) % bgGradients.length;
+
+            app.querySelector('::before').style.opacity = '0';
+            app.querySelector('::after').style.opacity = '1';
+            app.querySelector('::after').style.background = bgGradients[bgIndex];
+
+            setTimeout(() => {
+                app.querySelector('::before').style.background = bgGradients[nextIndex];
+                app.querySelector('::before').style.opacity = '1';
+                app.querySelector('::after').style.opacity = '0';
+            }, 2000);
+        }
+
+        setInterval(changeBgGradient, 5000);
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            form.style.display = 'none';
+            thankYouMessage.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
