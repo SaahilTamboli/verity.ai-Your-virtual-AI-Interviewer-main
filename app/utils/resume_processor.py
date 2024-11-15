@@ -1,3 +1,5 @@
+from pinecone import Pinecone
+from dotenv import load_dotenv
 import os
 import logging
 from typing import List
@@ -8,13 +10,17 @@ from pinecone import Pinecone, ServerlessSpec
 from PyPDF2 import PdfReader
 from io import BytesIO
 
+# Load environment variables first
+load_dotenv()
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Initialize Pinecone
-PINECONE_API_KEY = ""
-PINECONE_ENVIRONMENT = os.getenv("PINECONE_ENVIRONMENT")
-pc = Pinecone(api_key=PINECONE_API_KEY)
+def get_pinecone_client():
+    api_key = os.getenv("PINECONE_API_KEY")
+    if not api_key:
+        raise ValueError("PINECONE_API_KEY not found in environment")
+    return Pinecone(api_key=api_key)
 
 def extract_text_from_pdf(pdf_content: bytes) -> str:
     pdf_file = BytesIO(pdf_content)
@@ -26,6 +32,7 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
 
 def store_resume_in_pinecone(texts: List[str], index_name: str, file_url: str):
     try:
+        pc = get_pinecone_client()
         if index_name not in pc.list_indexes().names():
             pc.create_index(
                 name=index_name,
@@ -49,6 +56,8 @@ def store_resume_in_pinecone(texts: List[str], index_name: str, file_url: str):
 
 def process_and_vectorize_resume(file_content: bytes, file_url: str, index_name: str, user_id: str):
     try:
+        pc = get_pinecone_client()
+        index = pc.Index(index_name)
         logger.info(f"Starting resume processing for user: {user_id}")
         
         # Extract text from PDF
@@ -65,8 +74,6 @@ def process_and_vectorize_resume(file_content: bytes, file_url: str, index_name:
                 spec=ServerlessSpec(cloud="aws", region="us-east-1")
             )
         
-        index = pc.Index(index_name)
-        
         # Check for existing resume and delete if found
         existing_vectors = index.query(vector=[0]*384, filter={"user_id": user_id}, top_k=1)
         if existing_vectors.matches:
@@ -80,7 +87,7 @@ def process_and_vectorize_resume(file_content: bytes, file_url: str, index_name:
             documents=documents,
             embedding=embedding_function,
             index_name=index_name,
-            pinecone_api_key=PINECONE_API_KEY
+            pinecone_api_key=pc.api_key
         )
         
         logger.info(f"Resume processed and vectorized in Pinecone index: {index_name} for user: {user_id}")
